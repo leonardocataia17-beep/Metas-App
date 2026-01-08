@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Metas 2026</title>
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%); min-height: 100vh; color: white; padding: 16px; padding-bottom: 100px; }
+    .header { text-align: center; padding: 24px 0 8px; }
+    .header h1 { font-size: 2.5rem; font-weight: 900; background: linear-gradient(90deg, #facc15, #f97316, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .header p { color: #9ca3af; margin-top: 8px; }
+    .overall-progress { background: rgba(31, 41, 55, 0.5); border: 1px solid #374151; border-radius: 16px; padding: 16px; margin-top: 16px; }
+    .overall-progress .label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .overall-progress .label span:first-child { color: #9ca3af; font-size: 0.875rem; }
+    .overall-progress .label span:last-child { font-size: 1.5rem; font-weight: 700; color: #facc15; }
+    .progress-bar { height: 16px; background: #374151; border-radius: 999px; overflow: hidden; }
+    .progress-bar .fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+    .progress-bar .fill.overall { background: linear-gradient(90deg, #facc15, #f97316, #ef4444); }
+    .goals-list { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .goal-card { padding: 2px; border-radius: 16px; cursor: pointer; transition: transform 0.2s; }
+    .goal-card:active { transform: scale(0.98); }
+    .goal-card-inner { background: rgba(17, 24, 39, 0.95); border-radius: 14px; padding: 16px; }
+    .goal-card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+    .goal-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .goal-info { flex: 1; }
+    .goal-info h3 { font-size: 1.125rem; font-weight: 700; line-height: 1.3; }
+    .goal-info p { color: #9ca3af; font-size: 0.875rem; margin-top: 4px; }
+    .goal-percent { font-size: 1.875rem; font-weight: 900; }
+    .goal-progress { height: 10px; background: #374151; border-radius: 999px; overflow: hidden; }
+    .goal-progress .fill { height: 100%; transition: width 0.5s ease; }
+    .color-orange { background: linear-gradient(135deg, #f97316, #dc2626); }
+    .color-blue { background: linear-gradient(135deg, #3b82f6, #0891b2); }
+    .color-purple { background: linear-gradient(135deg, #a855f7, #4f46e5); }
+    .color-green { background: linear-gradient(135deg, #22c55e, #10b981); }
+    .color-pink { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+    .color-yellow { background: linear-gradient(135deg, #eab308, #f97316); }
+    .color-indigo { background: linear-gradient(135deg, #6366f1, #3b82f6); }
+    .color-cyan { background: linear-gradient(135deg, #06b6d4, #14b8a6); }
+    .bottom-actions { position: fixed; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(to top, #111827 0%, #111827 70%, transparent 100%); }
+    .bottom-actions-inner { display: flex; gap: 12px; max-width: 512px; margin: 0 auto; }
+    .btn-reset { flex: 1; background: #1f2937; border: 1px solid #374151; color: #9ca3af; font-weight: 500; padding: 14px; border-radius: 12px; font-size: 1rem; cursor: pointer; }
+    .btn-add { flex: 2; background: linear-gradient(90deg, #facc15, #f97316); border: none; color: #111827; font-weight: 700; padding: 14px; border-radius: 12px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(249, 115, 22, 0.3); }
+    .btn-add:active, .btn-reset:active { transform: scale(0.98); }
+    .detail-view { display: none; }
+    .detail-view.active { display: block; }
+    .home-view.hidden { display: none; }
+    .detail-header { padding: 2px; border-radius: 0; margin: -16px -16px 0; }
+    .detail-header-inner { background: rgba(17, 24, 39, 0.95); padding: 16px; }
+    .detail-header-top { display: flex; align-items: center; gap: 12px; }
+    .btn-back { background: none; border: none; color: white; padding: 8px; margin-left: -8px; cursor: pointer; border-radius: 50%; }
+    .btn-back:hover { background: rgba(255,255,255,0.1); }
+    .btn-delete { background: none; border: none; color: #f87171; padding: 8px; cursor: pointer; border-radius: 50%; }
+    .btn-delete:hover { background: rgba(248, 113, 113, 0.2); }
+    .detail-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .detail-title { flex: 1; font-size: 1.125rem; font-weight: 700; line-height: 1.3; }
+    .detail-progress { padding: 16px; }
+    .detail-progress .label { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .detail-progress .label span:first-child { color: #9ca3af; font-size: 0.875rem; }
+    .detail-progress .label span:last-child { font-weight: 700; font-size: 1.125rem; }
+    .detail-progress .progress-bar { height: 12px; }
+    .tasks-list { margin-top: 16px; display: flex; flex-direction: column; gap: 16px; }
+    .task-card { background: rgba(31, 41, 55, 0.8); border: 1px solid #374151; border-radius: 16px; padding: 16px; transition: all 0.3s; }
+    .task-card.completed { border-color: rgba(34, 197, 94, 0.5); background: rgba(34, 197, 94, 0.1); }
+    .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .task-info { display: flex; align-items: center; gap: 12px; }
+    .task-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #6b7280; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .task-check.done { background: #22c55e; border-color: #22c55e; color: white; }
+    .task-name { font-weight: 600; }
+    .task-card.completed .task-name { color: #4ade80; }
+    .task-remaining { font-size: 0.875rem; color: #9ca3af; margin-top: 4px; }
+    .task-remaining .highlight { color: #fb923c; font-weight: 600; }
+    .task-card.completed .task-remaining { color: #4ade80; font-weight: 500; }
+    .task-delete { background: none; border: none; color: #6b7280; padding: 6px; cursor: pointer; border-radius: 8px; }
+    .task-delete:hover { color: #f87171; background: rgba(248, 113, 113, 0.1); }
+    .task-progress { margin-bottom: 16px; }
+    .task-progress .label { display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 6px; }
+    .task-progress .label span:first-child { color: #9ca3af; }
+    .task-progress .label span:last-child { font-weight: 700; color: #fb923c; }
+    .task-card.completed .task-progress .label span:last-child { color: #4ade80; }
+    .task-progress .progress-bar { height: 12px; }
+    .task-controls { display: flex; align-items: center; gap: 8px; }
+    .btn-minus, .btn-plus { width: 48px; height: 48px; border-radius: 12px; border: none; font-size: 1.5rem; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
+    .btn-minus:active, .btn-plus:active { transform: scale(0.95); }
+    .btn-minus { background: #374151; color: white; }
+    .btn-plus { color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .task-value { flex: 1; background: #374151; border: none; border-radius: 12px; padding: 12px; text-align: center; font-size: 1.25rem; font-weight: 700; color: white; cursor: pointer; }
+    .task-value:focus { outline: 2px solid #f97316; }
+    .empty-state { text-align: center; padding: 64px 16px; color: #6b7280; }
+    .empty-state .icon { font-size: 5rem; opacity: 0.3; margin-bottom: 16px; }
+    .empty-state p { font-size: 1.125rem; font-weight: 500; }
+    .empty-state small { font-size: 0.875rem; display: block; margin-top: 8px; }
+    .btn-add-task { position: fixed; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(to top, #111827 0%, #111827 70%, transparent 100%); }
+    .btn-add-task button { width: 100%; max-width: 512px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; color: white; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; align-items: flex-end; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: #1f2937; width: 100%; max-width: 512px; border-radius: 24px 24px 0 0; padding: 24px; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-handle { width: 48px; height: 6px; background: #4b5563; border-radius: 999px; margin: 0 auto 16px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .modal-header h2 { font-size: 1.25rem; font-weight: 700; }
+    .modal-close { background: none; border: none; color: white; padding: 8px; cursor: pointer; border-radius: 50%; font-size: 1.5rem; }
+    .modal-close:hover { background: rgba(255,255,255,0.1); }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; color: #9ca3af; font-size: 0.875rem; margin-bottom: 8px; }
+    .form-group input { width: 100%; background: #374151; border: none; border-radius: 12px; padding: 14px 16px; color: white; font-size: 1rem; }
+    .form-group input::placeholder { color: #6b7280; }
+    .form-group input:focus { outline: 2px solid #f97316; }
+    .emoji-grid, .color-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .emoji-btn, .color-btn { width: 44px; height: 44px; border-radius: 12px; border: none; cursor: pointer; font-size: 1.25rem; transition: transform 0.2s; }
+    .emoji-btn { background: #374151; }
+    .emoji-btn.selected, .color-btn.selected { transform: scale(1.1); box-shadow: 0 0 0 2px white; }
+    .emoji-btn.selected { background: #f97316; }
+    .btn-submit { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 16px; transition: transform 0.1s; }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-submit.primary { background: linear-gradient(90deg, #facc15, #f97316); color: #111827; }
+  </style>
+</head>
+<body>
+  <div class="home-view" id="homeView">
+    <div class="header">
+      <h1>METAS 2026</h1>
+      <p>Foco total, Leonardo! 🔥</p>
+      <div class="overall-progress">
+        <div class="label">
+          <span>Progresso Geral do Ano</span>
+          <span id="overallPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="fill overall" id="overallBar" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="goals-list" id="goalsList"></div>
+    <div class="bottom-actions">
+      <div class="bottom-actions-inner">
+        <button class="btn-reset" onclick="resetAllData()">Resetar</button>
+        <button class="btn-add" onclick="openAddGoalModal()">+ Nova Meta</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-view" id="detailView">
+    <div class="detail-header" id="detailHeader">
+      <div class="detail-header-inner">
+        <div class="detail-header-top">
+          <button class="btn-back" onclick="goBack()">←</button>
+          <div class="detail-icon" id="detailIcon"></div>
+          <h1 class="detail-title" id="detailTitle"></h1>
+          <button class="btn-delete" onclick="deleteCurrentGoal()">🗑</button>
+        </div>
+      </div>
+      <div class="detail-progress">
+        <div class="label">
+          <span>Progresso da meta</span>
+          <span id="detailPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="fill" id="detailBar" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="tasks-list" id="tasksList"></div>
+    <div class="btn-add-task">
+      <button id="btnAddTask" onclick="openAddTaskModal()">+ Adicionar Tarefa</button>
+    </div>
+  </div>
+
+  <div class="modal" id="addGoalModal" onclick="closeModal('addGoalModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2>Nova Meta</h2>
+        <button class="modal-close" onclick="closeModal('addGoalModal')">×</button>
+      </div>
+      <div class="form-group">
+        <label>Nome da Meta</label>
+        <input type="text" id="goalName" placeholder="Ex: Aprender um novo idioma">
+      </div>
+      <div class="form-group">
+        <label>Emoji</label>
+        <div class="emoji-grid" id="emojiGrid"></div>
+      </div>
+      <div class="form-group">
+        <label>Cor</label>
+        <div class="color-grid" id="colorGrid"></div>
+      </div>
+      <button class="btn-submit primary" onclick="addGoal()">Criar Meta</button>
+    </div>
+  </div>
+
+  <div class="modal" id="addTaskModal" onclick="closeModal('addTaskModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2>Nova Tarefa</h2>
+        <button class="modal-close" onclick="closeModal('addTaskModal')">×</button>
+      </div>
+      <div class="form-group">
+        <label>Nome da Tarefa</label>
+        <input type="text" id="taskName" placeholder="Ex: Treinos de corrida">
+      </div>
+      <div class="form-group">
+        <label>Meta (quantidade)</label>
+        <input type="number" id="taskTarget" placeholder="100" value="100">
+      </div>
+      <button class="btn-submit primary" onclick="addTask()">Adicionar Tarefa</button>
+    </div>
+  </div>
+
+  <script>
+    const defaultGoals = [
+      { id: 1, title: "Ter um corpo estético e funcional", emoji: "💪", color: "orange", tasks: [
+        { id: 1, name: "Treinos de Musculação", target: 200, current: 0 },
+        { id: 2, name: "Treinos de Kickboxing", target: 120, current: 0 },
+        { id: 3, name: "Treinos de Jiu-Jitsu", target: 120, current: 0 }
+      ]},
+      { id: 2, title: "Ficar mais inteligente", emoji: "🧠", color: "blue", tasks: [
+        { id: 1, name: "Livros lidos", target: 24, current: 0 }
+      ]},
+      { id: 3, title: "Mais intimidade com Deus", emoji: "✝️", color: "purple", tasks: [
+        { id: 1, name: "Capítulos da Bíblia lidos", target: 1189, current: 0 }
+      ]},
+      { id: 4, title: "Sair da minha parentela", emoji: "🚀", color: "green", tasks: [
+        { id: 1, name: "Ofertas lançadas", target: 24, current: 0 },
+        { id: 2, name: "Melhorar Oratória", target: 1, current: 0 },
+        { id: 3, name: "Abrir Instagram Pro", target: 1, current: 0 }
+      ]}
+    ];
+
+    const emojis = ['🎯', '💪', '🧠', '✝️', '🚀', '💰', '❤️', '🏆', '⭐', '🔥', '💎', '📚', '🙏', '💼'];
+    const colors = ['orange', 'blue', 'purple', 'green', 'pink', 'yellow', 'indigo', 'cyan'];
+
+    let goals = [], currentGoalId = null, selectedEmoji = '🎯', selectedColor = 'orange';
+
+    function loadData() {
+      const saved = localStorage.getItem('metas2026LeonardoHTML');
+      goals = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultGoals));
+      render();
+    }
+
+    function saveData() { localStorage.setItem('metas2026LeonardoHTML', JSON.stringify(goals)); }
+
+    function calcGoalProgress(goal) {
+      if (!goal.tasks.length) return 0;
+      return Math.round(goal.tasks.reduce((sum, t) => sum + (t.current / t.target) * 100, 0) / goal.tasks.length);
+    }
+
+    function calcOverallProgress() {
+      if (!goals.length) return 0;
+      return Math.round(goals.reduce((sum, g) => sum + calcGoalProgress(g), 0) / goals.length);
+    }
+
+    function render() {
+      const op = calcOverallProgress();
+      document.getElementById('overallPercent').textContent = op + '%';
+      document.getElementById('overallBar').style.width = op + '%';
+      document.getElementById('goalsList').innerHTML = goals.map(goal => {
+        const p = calcGoalProgress(goal), c = goal.tasks.filter(t => t.current >= t.target).length;
+        return `<div class="goal-card color-${goal.color}" onclick="openGoal(${goal.id})">
+          <div class="goal-card-inner">
+            <div class="goal-card-header">
+              <div class="goal-icon color-${goal.color}">${goal.emoji}</div>
+              <div class="goal-info"><h3>${goal.title}</h3><p>${c}/${goal.tasks.length} tarefas completas</p></div>
+              <div class="goal-percent">${p}%</div>
+            </div>
+            <div class="goal-progress"><div class="fill color-${goal.color}" style="width:${p}%"></div></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function openGoal(id) {
+      currentGoalId = id;
+      document.getElementById('homeView').classList.add('hidden');
+      document.getElementById('detailView').classList.add('active');
+      renderDetail();
+    }
+
+    function goBack() {
+      currentGoalId = null;
+      document.getElementById('homeView').classList.remove('hidden');
+      document.getElementById('detailView').classList.remove('active');
+      render();
+    }
+
+    function renderDetail() {
+      const goal = goals.find(g => g.id === currentGoalId);
+      if (!goal) return goBack();
+      const p = calcGoalProgress(goal);
+      document.getElementById('detailHeader').className = `detail-header color-${goal.color}`;
+      document.getElementById('detailIcon').className = `detail-icon color-${goal.color}`;
+      document.getElementById('detailIcon').textContent = goal.emoji;
+      document.getElementById('detailTitle').textContent = goal.title;
+      document.getElementById('detailPercent').textContent = p + '%';
+      document.getElementById('detailBar').style.width = p + '%';
+      document.getElementById('detailBar').className = `fill color-${goal.color}`;
+      document.querySelector('#btnAddTask').style.background = getComputedStyle(document.querySelector(`.color-${goal.color}`)).background;
+      
+      if (!goal.tasks.length) {
+        document.getElementById('tasksList').innerHTML = `<div class="empty-state"><div class="icon">🎯</div><p>Nenhuma tarefa ainda</p><small>Adicione tarefas para acompanhar seu progresso</small></div>`;
+        return;
+      }
+      
+      document.getElementById('tasksList').innerHTML = goal.tasks.map(task => {
+        const tp = Math.round((task.current / task.target) * 100), r = task.target - task.current, done = task.current >= task.target;
+        return `<div class="task-card ${done ? 'completed' : ''}">
+          <div class="task-header">
+            <div class="task-info">
+              <div class="task-check ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+              <div>
+                <div class="task-name">${task.name}</div>
+                <div class="task-remaining">${done ? '✓ Meta concluída! 🎉' : `Faltam <span class="highlight">${r}</span> para a meta`}</div>
+              </div>
+            </div>
+            <button class="task-delete" onclick="deleteTask(${task.id})">🗑</button>
+          </div>
+          <div class="task-progress">
+            <div class="label"><span>${task.current} / ${task.target}</span><span>${tp}%</span></div>
+            <div class="progress-bar"><div class="fill ${done ? 'color-green' : 'color-' + goal.color}" style="width:${Math.min(100, tp)}%"></div></div>
+          </div>
+          <div class="task-controls">
+            <button class="btn-minus" onclick="updateTask(${task.id}, -1)">−</button>
+            <input type="number" class="task-value" value="${task.current}" onchange="setTask(${task.id}, this.value)" onclick="this.select()">
+            <button class="btn-plus color-${goal.color}" onclick="updateTask(${task.id}, 1)">+</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function updateTask(taskId, inc) {
+      const goal = goals.find(g => g.id === currentGoalId);
+      if (!goal) return;
+      const task = goal.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      task.current = Math.max(0, Math.min(task.target, task.current + inc));
+      saveData(); renderDetail();
+    }
+
+    function setTask(taskId, val) {
+      const goal = goals.find(g => g.id === currentGoalId);
+      if (!goal) return;
+      const task = goal.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      task.current = Math.max(0, Math.min(task.target, parseInt(val) || 0));
+      saveData(); renderDetail();
+    }
+
+    function deleteTask(taskId) {
+      if (!confirm('Excluir esta tarefa?')) return;
+      const goal = goals.find(g => g.id === currentGoalId);
+      if (!goal) return;
+      goal.tasks = goal.tasks.filter(t => t.id !== taskId);
+      saveData(); renderDetail();
+    }
+
+    function deleteCurrentGoal() {
+      if (!confirm('Tem certeza que deseja excluir esta meta?')) return;
+      goals = goals.filter(g => g.id !== currentGoalId);
+      saveData(); goBack();
+    }
+
+    function resetAllData() {
+      if (!confirm('Isso vai resetar TODAS as suas metas e progresso. Continuar?')) return;
+      localStorage.removeItem('metas2026LeonardoHTML');
+      goals = JSON.parse(JSON.stringify(defaultGoals));
+      saveData(); render();
+    }
+
+    function openAddGoalModal() {
+      selectedEmoji = '🎯'; selectedColor = 'orange';
+      document.getElementById('goalName').value = '';
+      renderEmojiGrid(); renderColorGrid();
+      document.getElementById('addGoalModal').classList.add('active');
+    }
+
+    function openAddTaskModal() {
+      document.getElementById('taskName').value = '';
+      document.getElementById('taskTarget').value = '100';
+      document.getElementById('addTaskModal').classList.add('active');
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function renderEmojiGrid() {
+      document.getElementById('emojiGrid').innerHTML = emojis.map(e => `<button class="emoji-btn ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</button>`).join('');
+    }
+
+    function renderColorGrid() {
+      document.getElementById('colorGrid').innerHTML = colors.map(c => `<button class="color-btn color-${c} ${c === selectedColor ? 'selected' : ''}" onclick="selectColor('${c}')"></button>`).join('');
+    }
+
+    function selectEmoji(e) { selectedEmoji = e; renderEmojiGrid(); }
+    function selectColor(c) { selectedColor = c; renderColorGrid(); }
+
+    function addGoal() {
+      const name = document.getElementById('goalName').value.trim();
+      if (!name) return;
+      goals.push({ id: Date.now(), title: name, emoji: selectedEmoji, color: selectedColor, tasks: [] });
+      saveData(); render(); closeModal('addGoalModal');
+    }
+
+    function addTask() {
+      const name = document.getElementById('taskName').value.trim();
+      const target = parseInt(document.getElementById('taskTarget').value) || 100;
+      if (!name) return;
+      const goal = goals.find(g => g.id === currentGoalId);
+      if (!goal) return;
+      goal.tasks.push({ id: Date.now(), name, target, current: 0 });
+      saveData(); renderDetail(); closeModal('addTaskModal');
+    }
+
+    loadData();
+  </script>
+</body>
